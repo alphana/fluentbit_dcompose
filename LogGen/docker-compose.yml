@@ -1,0 +1,38 @@
+version: "3.5"
+name: log-gen-compose
+
+services:
+  log-gen:
+    build:
+      dockerfile: ./ContainerFile
+
+    networks:
+      - default_bridge
+    command:
+      - /bin/sh
+      - -c
+      - >
+        mkdir -p /var/log/
+        i=0;
+        rotate=0;
+        while true;
+        do
+          echo "INFO log file $((i)) rotated for busybox app log"
+          while [ "$((rotate))" -lt "500" ]
+          do
+            echo "$(date) INFO $i busybox app log" >> /var/log/$((i)).log;
+            rotate=$((rotate + 1))
+            sleep 1.01;
+            echo "Curl log file $((rotate))"
+            curl -s -w -XPOST -H "content-type: application/json"  http://fluentbit:8888 -d '{"key1": 12345, "key2": "abc", "time": "2006-07-28T13:22:04Z" , "kafkaLog" : true , "logid" : "'$((rotate))'" }'
+            
+            
+          done
+          i=$((i+1));
+          rotate=0;
+        done
+    volumes:
+      - './var/log/busybox:/var/log'
+networks:
+  default_bridge:
+    external: true

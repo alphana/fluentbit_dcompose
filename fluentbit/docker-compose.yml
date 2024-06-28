@@ -1,0 +1,19 @@
+version: "3.5"
+name: fluent-bit-compose
+services:
+  fluentbit:
+    image: fluent/fluent-bit
+    ports:
+      - "8888:8888"
+      - "2020:2020"
+    volumes:
+      - ./conf/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./conf/parser_json.conf:/fluent-bit/etc/parser_json.conf
+      - ./lua/convert.lua:/fluent-bit/etc/convert.lua
+
+    networks:
+      - default_bridge
+
+networks:
+  default_bridge:
+    external: true
